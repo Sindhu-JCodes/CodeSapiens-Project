@@ -1,90 +1,231 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>Voice Assistant Project</title>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Smart Voice Assistant</title>
+
 <style>
-.myDiv {
-    border: 3px solid tomato;
-    background-color: transparent;
+body {
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #ccff00, #00ffcc);
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    transition: all 0.5s ease;
+  }
+
+  .hidden { display: none; }
+
+  .card {
+    background: rgba(255,255,255,0.15);
+    backdrop-filter: blur(10px);
+    padding: 40px;
+    border-radius: 20px;
     text-align: center;
     width: 350px;
-    margin: 15px auto;
-    padding: 15px;
-    border-radius: 8px;
-}
+    box-shadow: 0 4px 10px rgba(10,10,10,0.9);
+  }
 
-.myDiv label {
-    color: #cccccc; /* Label text color */
-}
-
-.myDiv input {
-    width: 80%;
-    padding: 8px;
-    margin: 5px 0 10px 0;
-    border: 1px solid #191970;
-    border-radius: 4px;
+  input {
+    width: 90%;
+    padding: 12px;
+    margin: 20px 0;
+    border: blue;
+    border-radius: 25px;
+    outline: none;
+    font-size: 16px;
     text-align: center;
-    background-color: #2c2c54; /* Darker input background */
-    color: #fff; /* Input text color */
-}
+  }
 
-#login-signup-button {
-    padding: 10px 20px;
-    background-color: #6A0DAD;
-    color: white;
-    border: none;
-    border-radius: 5px;
+  button {
+    background-color:#fff;
+    color: #333;
+    border: black;
+    border-radius: 25px;
+    padding: 20px 30px;
+    font-size: 16px;
     cursor: pointer;
+    transition: 0.3s;
     font-weight: bold;
-    margin-top: 10px;
-}
+    margin-top: 50px;
+  }
+  button:hover { background-color: #00ffcc; }
+
+  .link {
+    margin-top: 15px;
+    font-size: 14px;
+    cursor: pointer;
+    color: #00ffff;
+  }
+
+  .avatar {
+    width: 100px;
+    height: 100px;
+    background: url('https://cdn-icons-png.flaticon.com/512/4712/4712027.png') no-repeat center/cover;
+    border-radius: 50%;
+    animation: bounce 1.5s infinite;
+    margin-bottom: 20px;
+  }
+
+  @keyframes bounce {
+    0%,100%{transform:translateY(0);}
+    50%{transform:translateY(-20px);}
+  }
+
+  .container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 80%;
+    max-width: 500px;
+    margin-top: 20px;
+    gap: 15px;
+  }
+
+  .box {
+    background: rgba(255,255,255,0.15);
+    border-radius: 20px;
+    padding: 20px;
+    width: 100%;
+    text-align: left;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  }
+
+  .you { border-left: 5px solid #00ffcc;
+             border-right: 5px solid #ffcc00; }
+  .assistant { border-left: 5px solid #ffcc00;
+                     border-right: 5px solid #00ffcc; }
 </style>
 </head>
+<body>
 
-<body style="
-    background-color: #191970;
-    color: #cccccc;
-    text-align: center;
-    font-family: Arial, sans-serif;
-">
+<!-- LOGIN PAGE -->
+<div id="loginPage" class="card">
+  <h2>🔐 Login</h2>
+   
+  <input type="text" id="loginUser" placeholder="Username" /><br>
+  <input type="password" id="loginPass" placeholder="Password" /><br>
+  <button onclick="login()">Login</button>
+  <div class="link" onclick="showSignup()">New user? Sign up</div>
+</div>
 
-    <h1 style="
-        font-size: 40px; 
-        color: #fff;
-        margin-bottom: 5px;
-        margin-top: 50px;
-    ">
-        Aura Assistant
-    </h1>
+<!-- SIGNUP PAGE -->
+<div id="signupPage" class="card hidden">
+  <h2>📝 Sign Up</h2>
+  <input type="text" id="signupUser" placeholder="Choose Username" /><br>
+  <input type="password" id="signupPass" placeholder="Choose Password" /><br>
+  <button onclick="signup()">Create Account</button>
+  <div class="link" onclick="showLogin()">Already have account? Login</div>
+</div>
 
-    <p style="font-size: 23px; margin: 5px 15%;">
-        Aura Assistant is your seamless, voice-enabled interface, designed to streamline your workflow and provide instant, accurate information through Natural Language Interaction.
-    </p>
-<br><br>
-    <p style="font-size: 23px; margin: 5px 15%;">
-        Transitioning beyond traditional navigation, this platform offers a hands-free experience, allowing you to converse with the system and receive dynamic, context-aware responses.
-    </p>
+<!-- PROFILE PAGE -->
+<div id="profilePage" class="card hidden">
+  <h2>👤 User Profile</h2>
+  <input type="text" id="newUser" placeholder="New Username" /><br>
+  <input type="password" id="newPass" placeholder="New Password" /><br>
+  <button onclick="updateProfile()">Update</button>
+  <div class="link" onclick="showAssistant()">Back to Assistant</div>
+</div>
 
-    <div class="myDiv">
-        <label for="UserName" style="display:block; font-weight: bold;">NAME:</label>
-        <input type="text" id="UserName" name="fullname" placeholder="Enter your name">
-    </div>
+<!-- VOICE ASSISTANT PAGE -->
+<div id="assistantPage" class="hidden">
+  <div class="avatar"></div>
+  <h1>🎤 Smart Voice Assistant</h1>
+  <button id="btn">Talk to Me</button>
+  <div class="container">
+    <div class="box you" id="youBox">🧍‍♀ You: <br><span id="youText">Click "Talk to Me" and start speaking...</span></div>
+    <div class="box assistant" id="assistantBox">🤖 Assistant: <br><span id="assistantText">Waiting for your voice...</span></div>
+  </div>
+  <div class="link" onclick="showProfile()">⚙ Edit Profile</div>
+</div>
 
-    <div class="myDiv">
-        <label for="UserPhone" style="display:block; font-weight: bold;">PHONE NUMBER:</label>
-        <input type="tel" id="UserPhone" name="userphone" placeholder="Enter phone number">
-    </div>
+<script>
+  // Page Switch Logic
+  function showSignup(){ loginPage.classList.add('hidden'); signupPage.classList.remove('hidden'); }
+  function showLogin(){ signupPage.classList.add('hidden'); loginPage.classList.remove('hidden'); }
+  function showAssistant(){ profilePage.classList.add('hidden'); assistantPage.classList.remove('hidden'); }
+  function showProfile(){ assistantPage.classList.add('hidden'); profilePage.classList.remove('hidden'); }
 
-    <div class="myDiv">
-        <label for="UserEmail" style="display:block; font-weight: bold;">EMAIL ID:</label>
-        <input type="email" id="UserEmail" name="useremail" placeholder="Enter email">
-    </div>
-    
-    <div>
-        <button id="login-signup-button">
-            LOGIN / SIGNUP
-        </button>
-    </div>
+  // Signup
+  function signup(){
+    const user = signupUser.value.trim();
+    const pass = signupPass.value.trim();
+    if(user==="" || pass===""){ alert("Enter all details"); return; }
+    localStorage.setItem("username", user);
+    localStorage.setItem("password", pass);
+    alert("Account created! Please login.");
+    showLogin();
+  }
 
+  // Login
+  function login(){
+    const user = loginUser.value.trim();
+    const pass = loginPass.value.trim();
+    const storedUser = localStorage.getItem("username");
+    const storedPass = localStorage.getItem("password");
+    if(user === storedUser && pass === storedPass){
+      loginPage.classList.add('hidden');
+      assistantPage.classList.remove('hidden');
+    } else {
+      alert("Invalid username or password");
+    }
+  }
+
+  // Profile Update
+  function updateProfile(){
+    const user = newUser.value.trim();
+    const pass = newPass.value.trim();
+    if(user==="" || pass===""){ alert("Enter all details"); return; }
+    localStorage.setItem("username", user);
+    localStorage.setItem("password", pass);
+    alert("Profile updated successfully!");
+    showAssistant();
+  }
+
+  // Voice Assistant
+  const btn = document.getElementById('btn');
+  const youText = document.getElementById('youText');
+  const assistantText = document.getElementById('assistantText');
+
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const recognition = new SpeechRecognition();
+  recognition.lang = 'en-US';
+
+  function speak(text){
+    const speech = new SpeechSynthesisUtterance(text);
+    speech.pitch = 1; speech.rate = 1; speech.volume = 1;
+    speechSynthesis.speak(speech);
+  }
+
+  recognition.onstart = ()=>{ youText.textContent = "🎙 Listening..."; assistantText.textContent = "🤖 I'm listening..."; }
+  recognition.onspeechend = ()=>{ recognition.stop(); youText.textContent = "Processing..."; }
+  recognition.onresult = (event)=>{
+    const transcript = event.results[0][0].transcript.toLowerCase();
+    youText.textContent = transcript;
+    replyToUser(transcript);
+  }
+
+  function replyToUser(message){
+    let reply = "";
+    if(message.includes("hii")) reply = "Hello!";
+    else if(message.includes("hello")) reply = "Hey there, how are you today?";
+    else if(message.includes("fine")) reply = "Amazing! How's your day going?";
+    else if(message.includes("great")) reply = "That's good to hear!";
+    else if(message.includes("time")) reply = "The current time is " + new Date().toLocaleTimeString();
+    else if(message.includes("date")) reply = "Today is " + new Date().toLocaleDateString();
+    else if(message.includes("your name")) reply = "I’m Ava, your voice assistant!";
+    else if(message.includes("bye")) reply = "Goodbye! Have a wonderful day!";
+    else reply = "Hmm, I didn't get that. Try again!";
+
+    assistantText.textContent = reply;
+    speak(reply);
+  }
+
+  btn.addEventListener('click', ()=> recognition.start());
+</script>
 </body>
 </html>
