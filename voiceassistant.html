@@ -1,231 +1,730 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Smart Voice Assistant</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NIVA - Voice Assistant</title>
+    
+    <style>
+        /* --- 0. Variables and Global Reset (Combined styles.css) --- */
+        :root {
+            --color-primary: #4A90E2; /* Soft Blue */
+            --color-secondary: #E8E8E8; /* Light Gray */
+            --color-text-dark: #333333;
+            --color-text-light: #FFFFFF;
+            --color-background: #F4F7FA;
+            --color-success: #5CB85C; /* Green/Success for Microphone Pulse */
+            --color-error: #D9534F;
+        }
 
-<style>
-body {
-    margin: 0;
-    font-family: 'Poppins', sans-serif;
-    background: linear-gradient(135deg, #ccff00, #00ffcc);
-    color: white;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    transition: all 0.5s ease;
-  }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+        }
 
-  .hidden { display: none; }
+        body {
+            background-color: var(--color-background);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
 
-  .card {
-    background: rgba(255,255,255,0.15);
-    backdrop-filter: blur(10px);
-    padding: 40px;
-    border-radius: 20px;
-    text-align: center;
-    width: 350px;
-    box-shadow: 0 4px 10px rgba(10,10,10,0.9);
-  }
+        /* --- 1. Layout & View Management --- */
+        #app-container {
+            background: var(--color-text-light);
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 500px;
+            min-height: 500px;
+            display: flex;
+            flex-direction: column;
+        }
 
-  input {
-    width: 90%;
-    padding: 12px;
-    margin: 20px 0;
-    border: blue;
-    border-radius: 25px;
-    outline: none;
-    font-size: 16px;
-    text-align: center;
-  }
+        .view {
+            padding: 30px;
+            transition: opacity 0.3s ease-in-out;
+        }
+        .hidden {
+            display: none !important;
+            opacity: 0;
+        }
+        .active {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
 
-  button {
-    background-color:#fff;
-    color: #333;
-    border: black;
-    border-radius: 25px;
-    padding: 20px 30px;
-    font-size: 16px;
-    cursor: pointer;
-    transition: 0.3s;
-    font-weight: bold;
-    margin-top: 50px;
-  }
-  button:hover { background-color: #00ffcc; }
+        /* --- Landing & Form Card (Flexbox Layout) --- */
+        .card {
+            background: var(--color-secondary);
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
 
-  .link {
-    margin-top: 15px;
-    font-size: 14px;
-    cursor: pointer;
-    color: #00ffff;
-  }
+        .card-landing {
+            text-align: center;
+            padding: 40px 20px;
+            margin-top: 100px;
+        }
 
-  .avatar {
-    width: 100px;
-    height: 100px;
-    background: url('https://cdn-icons-png.flaticon.com/512/4712/4712027.png') no-repeat center/cover;
-    border-radius: 50%;
-    animation: bounce 1.5s infinite;
-    margin-bottom: 20px;
-  }
+        .logo {
+            color: var(--color-primary);
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        .logo-large {
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+        .description {
+            color: var(--color-text-dark);
+            margin-bottom: 30px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
 
-  @keyframes bounce {
-    0%,100%{transform:translateY(0);}
-    50%{transform:translateY(-20px);}
-  }
+        /* --- Form Styling --- */
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
 
-  .container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 80%;
-    max-width: 500px;
-    margin-top: 20px;
-    gap: 15px;
-  }
+        input[type="text"], input[type="password"] {
+            padding: 12px;
+            border: 1px solid #CCCCCC;
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+        input[type="text"]:focus, input[type="password"]:focus {
+            outline: none;
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.3);
+        }
 
-  .box {
-    background: rgba(255,255,255,0.15);
-    border-radius: 20px;
-    padding: 20px;
-    width: 100%;
-    text-align: left;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-  }
+        .form-toggle {
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--color-primary);
+            text-decoration: none;
+            margin-top: 5px;
+        }
 
-  .you { border-left: 5px solid #00ffcc;
-             border-right: 5px solid #ffcc00; }
-  .assistant { border-left: 5px solid #ffcc00;
-                     border-right: 5px solid #00ffcc; }
-</style>
+        /* --- Button Styling --- */
+        .button-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.2s ease;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background-color: var(--color-primary);
+            color: var(--color-text-light);
+            border-color: var(--color-primary);
+            box-shadow: 0 4px 10px rgba(74, 144, 226, 0.4);
+        }
+        .btn-primary:hover {
+            background-color: #3B7AD1;
+            box-shadow: 0 6px 15px rgba(74, 144, 226, 0.6);
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            color: var(--color-primary);
+            border-color: var(--color-primary);
+        }
+        .btn-secondary:hover {
+            background-color: var(--color-primary);
+            color: var(--color-text-light);
+        }
+
+        /* --- 2. Header (Authenticated View) --- */
+        #app-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 30px;
+            border-bottom: 1px solid #EEE;
+            background-color: var(--color-text-light);
+        }
+        #app-header .logo {
+            font-size: 1.5rem;
+            margin-bottom: 0;
+        }
+
+        /* --- 3. Assistant View (CSS Grid Layout) --- */
+        .grid-layout {
+            display: grid !important;
+            grid-template-rows: 1fr auto; /* Chat area takes remaining space, input area sized by content */
+            height: 100%;
+            min-height: 450px;
+            padding: 0;
+        }
+
+        #chat-history {
+            overflow-y: auto;
+            padding: 20px 30px;
+            background-color: var(--color-background);
+        }
+        .chat-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+        .chat-scroll::-webkit-scrollbar-thumb {
+            background-color: var(--color-primary);
+            border-radius: 3px;
+        }
+        .chat-scroll::-webkit-scrollbar-track {
+            background: var(--color-secondary);
+        }
+
+        /* --- Chat Bubble Styles --- */
+        .message {
+            display: flex;
+            margin-bottom: 15px;
+            line-height: 1.4;
+        }
+
+        .user-message {
+            justify-content: flex-end;
+        }
+        .assistant-message {
+            justify-content: flex-start;
+        }
+
+        .message-bubble {
+            padding: 10px 15px;
+            border-radius: 20px;
+            max-width: 80%;
+            font-size: 0.95rem;
+        }
+
+        .user-message .message-bubble {
+            background-color: var(--color-primary);
+            color: var(--color-text-light);
+            border-bottom-right-radius: 4px;
+        }
+
+        .assistant-message .message-bubble {
+            background-color: var(--color-secondary);
+            color: var(--color-text-dark);
+            border-bottom-left-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        /* --- Input Area --- */
+        #input-area {
+            padding: 15px 30px;
+            background-color: var(--color-text-light);
+            border-top: 1px solid #EEE;
+            display: flex;
+            flex-direction: column; /* Stack mic button and result */
+            align-items: center;
+            gap: 10px;
+        }
+
+        .mic-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: var(--color-primary);
+            color: var(--color-text-light);
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 15px rgba(74, 144, 226, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .mic-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .mic-btn.listening {
+            /* Use the success/green color for the listening state pulse */
+            background-color: var(--color-success); 
+            box-shadow: 0 0 0 0 rgba(92, 184, 92, 0.7);
+            animation: pulse 1.5s infinite;
+        }
+
+        .mic-result {
+            font-size: 0.9rem;
+            color: var(--color-text-dark);
+            height: 1.5em; /* Reserve space */
+            text-align: center;
+        }
+
+        /* --- Text Fallback Input (Flexbox) --- */
+        .text-input-group {
+            display: flex;
+            width: 100%;
+            gap: 10px;
+        }
+
+        #chat-input {
+            flex-grow: 1;
+            padding: 10px;
+        }
+        #send-button {
+            padding: 10px 15px;
+        }
+
+        /* --- 4. Animations --- */
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(92, 184, 92, 0.7); } /* Green Pulse */
+            70% { box-shadow: 0 0 0 15px rgba(92, 184, 92, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(92, 184, 92, 0); }
+        }
+
+        /* --- 5. Modals and Utilities --- */
+        .modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal {
+            background-color: var(--color-text-light);
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            width: 90%;
+            max-width: 350px;
+            text-align: center;
+        }
+        .modal h3 {
+            color: var(--color-primary);
+            margin-bottom: 15px;
+        }
+        .modal p {
+            color: var(--color-text-dark);
+            margin-bottom: 20px;
+        }
+
+        /* --- Media Queries (Responsiveness) --- */
+        @media (min-width: 600px) {
+            .grid-layout {
+                min-height: 500px;
+            }
+            #app-container {
+                max-width: 600px;
+            }
+        }
+    </style>
 </head>
 <body>
 
-<!-- LOGIN PAGE -->
-<div id="loginPage" class="card">
-  <h2>🔐 Login</h2>
-   
-  <input type="text" id="loginUser" placeholder="Username" /><br>
-  <input type="password" id="loginPass" placeholder="Password" /><br>
-  <button onclick="login()">Login</button>
-  <div class="link" onclick="showSignup()">New user? Sign up</div>
-</div>
+    <main id="app-container">
+        
+        <!-- Header for Authenticated View -->
+        <header id="app-header" class="hidden">
+            <h1 class="logo">NIVA</h1>
+            <button id="logout-button" class="btn btn-secondary">Logout</button>
+        </header>
 
-<!-- SIGNUP PAGE -->
-<div id="signupPage" class="card hidden">
-  <h2>📝 Sign Up</h2>
-  <input type="text" id="signupUser" placeholder="Choose Username" /><br>
-  <input type="password" id="signupPass" placeholder="Choose Password" /><br>
-  <button onclick="signup()">Create Account</button>
-  <div class="link" onclick="showLogin()">Already have account? Login</div>
-</div>
+        <!-- Dynamic Content Area -->
+        <section id="dynamic-content">
 
-<!-- PROFILE PAGE -->
-<div id="profilePage" class="card hidden">
-  <h2>👤 User Profile</h2>
-  <input type="text" id="newUser" placeholder="New Username" /><br>
-  <input type="password" id="newPass" placeholder="New Password" /><br>
-  <button onclick="updateProfile()">Update</button>
-  <div class="link" onclick="showAssistant()">Back to Assistant</div>
-</div>
+            <!-- 1. LANDING PAGE -->
+            <div id="landing-view" class="view active">
+                <div class="card card-landing">
+                    <h1 class="logo logo-large">NIVA</h1>
+                    <p class="description">NIVA is your friendly voice assistant. She answers your questions with voice, tells time/date, and shares uplifting affirmations. Sign up or log in to start talking!</p>
+                    <div class="button-group">
+                        <button class="btn btn-primary" data-action="show-register">Create Account</button>
+                        <button class="btn btn-secondary" data-action="show-login">Sign In</button>
+                    </div>
+                </div>
+            </div>
 
-<!-- VOICE ASSISTANT PAGE -->
-<div id="assistantPage" class="hidden">
-  <div class="avatar"></div>
-  <h1>🎤 Smart Voice Assistant</h1>
-  <button id="btn">Talk to Me</button>
-  <div class="container">
-    <div class="box you" id="youBox">🧍‍♀ You: <br><span id="youText">Click "Talk to Me" and start speaking...</span></div>
-    <div class="box assistant" id="assistantBox">🤖 Assistant: <br><span id="assistantText">Waiting for your voice...</span></div>
-  </div>
-  <div class="link" onclick="showProfile()">⚙ Edit Profile</div>
-</div>
+            <!-- 2a. REGISTRATION FORM -->
+            <div id="register-view" class="view hidden">
+                <div class="card">
+                    <h2>Create Account</h2>
+                    <form id="register-form">
+                        <input type="text" id="reg-username" placeholder="Username (min 3 chars)" required minlength="3" aria-label="Username">
+                        <input type="password" id="reg-password" placeholder="Password (min 8 chars, 1 number, 1 symbol)" required minlength="8" aria-label="Password">
+                        <button type="submit" class="btn btn-primary">Register</button>
+                        <a href="#" class="form-toggle" data-action="show-login">Already have an account? Sign In</a>
+                    </form>
+                </div>
+            </div>
 
-<script>
-  // Page Switch Logic
-  function showSignup(){ loginPage.classList.add('hidden'); signupPage.classList.remove('hidden'); }
-  function showLogin(){ signupPage.classList.add('hidden'); loginPage.classList.remove('hidden'); }
-  function showAssistant(){ profilePage.classList.add('hidden'); assistantPage.classList.remove('hidden'); }
-  function showProfile(){ assistantPage.classList.add('hidden'); profilePage.classList.remove('hidden'); }
+            <!-- 2b. LOGIN FORM -->
+            <div id="login-view" class="view hidden">
+                <div class="card">
+                    <h2>Sign In</h2>
+                    <form id="login-form">
+                        <input type="text" id="login-username" placeholder="Username" required aria-label="Username">
+                        <input type="password" id="login-password" placeholder="Password" required aria-label="Password">
+                        <button type="submit" class="btn btn-primary">Sign In</button>
+                        <a href="#" class="form-toggle" data-action="show-register">New user? Create Account</a>
+                    </form>
+                </div>
+            </div>
 
-  // Signup
-  function signup(){
-    const user = signupUser.value.trim();
-    const pass = signupPass.value.trim();
-    if(user==="" || pass===""){ alert("Enter all details"); return; }
-    localStorage.setItem("username", user);
-    localStorage.setItem("password", pass);
-    alert("Account created! Please login.");
-    showLogin();
-  }
+            <!-- 3. ASSISTANT VIEW (CSS Grid Layout) -->
+            <div id="assistant-view" class="view hidden grid-layout">
+                <div id="chat-history" class="chat-scroll">
+                    <!-- Messages dynamically inserted here -->
+                </div>
 
-  // Login
-  function login(){
-    const user = loginUser.value.trim();
-    const pass = loginPass.value.trim();
-    const storedUser = localStorage.getItem("username");
-    const storedPass = localStorage.getItem("password");
-    if(user === storedUser && pass === storedPass){
-      loginPage.classList.add('hidden');
-      assistantPage.classList.remove('hidden');
-    } else {
-      alert("Invalid username or password");
-    }
-  }
+                <div id="input-area" class="input-area">
+                    <!-- Microphone Button -->
+                    <button id="mic-button" aria-label="Start Voice Command" class="mic-btn">
+                        <svg viewBox="0 0 24 24" fill="currentColor" width="32" height="32">
+                            <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3.53-2.61 6.44-6 6.93V20h2v2H9v-2h2v-3.07c-3.39-.49-6-3.4-6-6.93h2c0 2.87 2.1 5.25 5 5.65V17h-1v2h4v-2h-1v-5.65c2.9-.4 5-2.78 5-5.65z"/>
+                        </svg>
+                    </button>
+                    
+                    <!-- Text Input Fallback -->
+                    <div id="text-fallback" class="text-input-group hidden">
+                        <input type="text" id="chat-input" placeholder="Type command if mic unavailable" aria-label="Chat Input">
+                        <button id="send-button" class="btn btn-primary">Send</button>
+                    </div>
 
-  // Profile Update
-  function updateProfile(){
-    const user = newUser.value.trim();
-    const pass = newPass.value.trim();
-    if(user==="" || pass===""){ alert("Enter all details"); return; }
-    localStorage.setItem("username", user);
-    localStorage.setItem("password", pass);
-    alert("Profile updated successfully!");
-    showAssistant();
-  }
+                    <!-- Voice Transcription/Result Display -->
+                    <p id="mic-result" class="mic-result">Tap to start speaking.</p>
+                </div>
+            </div>
 
-  // Voice Assistant
-  const btn = document.getElementById('btn');
-  const youText = document.getElementById('youText');
-  const assistantText = document.getElementById('assistantText');
+        </section>
+        
+        <!-- Global Message/Error Box (Replaces alert()) -->
+        <div id="message-box" class="modal-backdrop hidden">
+            <div class="modal">
+                <h3 id="modal-title"></h3>
+                <p id="modal-content"></p>
+                <button class="btn btn-primary" onclick="document.getElementById('message-box').classList.add('hidden');">Close</button>
+            </div>
+        </div>
+    </main>
 
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  const recognition = new SpeechRecognition();
-  recognition.lang = 'en-US';
+    <script>
+        // --- Configuration & State ---
+        const ACTIVE_VIEW_CLASS = 'active';
+        let CURRENT_USER = null;
 
-  function speak(text){
-    const speech = new SpeechSynthesisUtterance(text);
-    speech.pitch = 1; speech.rate = 1; speech.volume = 1;
-    speechSynthesis.speak(speech);
-  }
+        const AFFIRMATIONS = [
+            "You are capable of amazing things!",
+            "Every day is a fresh start.",
+            "Your potential is limitless.",
+            "You are doing a great job.",
+            "Believe in yourself.",
+            "Your hard work will pay off.",
+            "Take a deep breath; you've got this.",
+            "Focus on the good.",
+            "Small progress is still progress.",
+            "Be kind to yourself today."
+        ];
 
-  recognition.onstart = ()=>{ youText.textContent = "🎙 Listening..."; assistantText.textContent = "🤖 I'm listening..."; }
-  recognition.onspeechend = ()=>{ recognition.stop(); youText.textContent = "Processing..."; }
-  recognition.onresult = (event)=>{
-    const transcript = event.results[0][0].transcript.toLowerCase();
-    youText.textContent = transcript;
-    replyToUser(transcript);
-  }
+        // --- Web Speech API Setup ---
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const speechSynthesis = window.speechSynthesis;
+        let recognition = null;
+        let isListening = false;
 
-  function replyToUser(message){
-    let reply = "";
-    if(message.includes("hii")) reply = "Hello!";
-    else if(message.includes("hello")) reply = "Hey there, how are you today?";
-    else if(message.includes("fine")) reply = "Amazing! How's your day going?";
-    else if(message.includes("great")) reply = "That's good to hear!";
-    else if(message.includes("time")) reply = "The current time is " + new Date().toLocaleTimeString();
-    else if(message.includes("date")) reply = "Today is " + new Date().toLocaleDateString();
-    else if(message.includes("your name")) reply = "I’m Ava, your voice assistant!";
-    else if(message.includes("bye")) reply = "Goodbye! Have a wonderful day!";
-    else reply = "Hmm, I didn't get that. Try again!";
+        // --- DOM References ---
+        const dom = {
+            appHeader: document.getElementById('app-header'),
+            chatHistory: document.getElementById('chat-history'),
+            micButton: document.getElementById('mic-button'),
+            micResult: document.getElementById('mic-result'),
+            textFallback: document.getElementById('text-fallback'),
+            chatInput: document.getElementById('chat-input'),
+            sendButton: document.getElementById('send-button'),
+            messageBox: document.getElementById('message-box'),
+            modalTitle: document.getElementById('modal-title'),
+            modalContent: document.getElementById('modal-content')
+        };
 
-    assistantText.textContent = reply;
-    speak(reply);
-  }
+        // --- UTILITY FUNCTIONS ---
 
-  btn.addEventListener('click', ()=> recognition.start());
-</script>
+        function showMessage(title, content) {
+            dom.modalTitle.textContent = title;
+            dom.modalContent.textContent = content;
+            dom.messageBox.classList.remove('hidden');
+        }
+
+        function showView(viewId) {
+            document.querySelectorAll('.view').forEach(view => {
+                view.classList.remove(ACTIVE_VIEW_CLASS);
+                view.classList.add('hidden');
+            });
+
+            const view = document.getElementById(viewId);
+            if (view) {
+                view.classList.remove('hidden');
+                view.classList.add(ACTIVE_VIEW_CLASS);
+            }
+            
+            // Manage header visibility
+            if (viewId === 'assistant-view') {
+                dom.appHeader.classList.remove('hidden');
+            } else {
+                dom.appHeader.classList.add('hidden');
+            }
+        }
+
+        function scrollToBottom() {
+            dom.chatHistory.scrollTop = dom.chatHistory.scrollHeight;
+        }
+
+        // --- AUTHENTICATION LOGIC ---
+
+        function loadUser() {
+            const user = localStorage.getItem('niva_user'); 
+            return user ? JSON.parse(user) : null;
+        }
+
+        function saveUser(user, pass) {
+            localStorage.setItem('niva_user', JSON.stringify({ username: user, password: pass }));
+        }
+
+        function clearSession() {
+            localStorage.removeItem('niva_user');
+            CURRENT_USER = null;
+            dom.chatHistory.innerHTML = ''; // Clear chat history on logout
+        }
+
+        function validatePassword(pass) {
+            // Min 8 chars, must include 1 number and 1 symbol
+            return pass.length >= 8 && /\d/.test(pass) && /[!@#$%^&*(),.?":{}|<>]/.test(pass);
+        }
+
+        function handleRegister(e) {
+            e.preventDefault();
+            const username = document.getElementById('reg-username').value.trim();
+            const password = document.getElementById('reg-password').value;
+
+            if (username.length < 3) {
+                showMessage('Error', 'Username must be at least 3 characters long.');
+                return;
+            }
+            if (!validatePassword(password)) {
+                showMessage('Error', 'Password must be at least 8 characters long and include a number and a symbol.');
+                return;
+            }
+
+            saveUser(username, password); 
+            showMessage('Success', 'Account created! Please sign in.');
+            showView('login-view');
+            document.getElementById('register-form').reset();
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            const user = document.getElementById('login-username').value.trim();
+            const pass = document.getElementById('login-password').value;
+            const storedUser = loadUser();
+
+            if (storedUser && storedUser.username === user && storedUser.password === pass) {
+                CURRENT_USER = storedUser;
+                showView('assistant-view');
+                initializeAssistant();
+            } else {
+                showMessage('Error', 'Invalid username or password.');
+            }
+        }
+
+        function handleLogout() {
+            clearSession();
+            showView('landing-view');
+        }
+
+        // --- CHAT DISPLAY LOGIC ---
+
+        function appendMessage(sender, text) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message', `${sender}-message`);
+
+            const bubble = document.createElement('div');
+            bubble.classList.add('message-bubble');
+            bubble.textContent = text;
+            
+            messageDiv.appendChild(bubble);
+            dom.chatHistory.appendChild(messageDiv);
+            scrollToBottom();
+        }
+
+        function initializeAssistant() {
+            appendMessage('assistant', `Hello, ${CURRENT_USER.username}! I am NIVA. How can I assist you today? Try asking for the 'time', 'date', or an 'affirmation'.`);
+            checkSpeechAPI();
+        }
+
+        // --- SPEECH API & NIVA LOGIC ---
+
+        function speak(text) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'en-US'; 
+            speechSynthesis.speak(utterance);
+        }
+
+        function handleUserCommand(command) {
+            const cleanCommand = command.toLowerCase().trim();
+            let responseText = '';
+
+            // 1. Core Logic
+            if (cleanCommand.includes("hello") || cleanCommand.includes("hi")) {
+                responseText = "Hello! How can I help you today?";
+            } else if (cleanCommand.includes("time")) {
+                const now = new Date();
+                const time = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+                responseText = `It's ${time}`;
+            } else if (cleanCommand.includes("date")) {
+                const now = new Date();
+                const date = now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+                responseText = `Today is ${date}`;
+            } else if (cleanCommand.includes("affirmation") || cleanCommand.includes("motivate") || cleanCommand.includes("inspire")) {
+                const randomIndex = Math.floor(Math.random() * AFFIRMATIONS.length);
+                responseText = AFFIRMATIONS[randomIndex];
+            } else {
+                // Fallback Response
+                responseText = `You said: "${command}". That's interesting! Try asking for time, date, or an affirmation!`;
+            }
+
+            // 2. Display and Speak
+            appendMessage('assistant', responseText);
+            speak(responseText);
+        }
+
+        // --- SPEECH RECOGNITION IMPLEMENTATION ---
+
+        function checkSpeechAPI() {
+            if (SpeechRecognition) {
+                dom.textFallback.classList.add('hidden');
+                recognition = new SpeechRecognition();
+                recognition.continuous = false;
+                recognition.lang = 'en-US';
+                recognition.interimResults = false;
+                recognition.maxAlternatives = 1;
+
+                recognition.onstart = () => {
+                    isListening = true;
+                    dom.micButton.classList.add('listening');
+                    dom.micResult.textContent = 'Listening... Speak now.';
+                };
+
+                recognition.onresult = (event) => {
+                    const transcript = event.results[0][0].transcript;
+                    dom.micResult.textContent = transcript;
+                    appendMessage('user', transcript);
+                    handleUserCommand(transcript);
+                };
+
+                recognition.onerror = (event) => {
+                    isListening = false;
+                    dom.micButton.classList.remove('listening');
+                    dom.micResult.textContent = 'Error: ' + event.error + '. Try typing.';
+                    // Show text input fallback if a permanent error occurs
+                    if (event.error !== 'no-speech') {
+                         dom.textFallback.classList.remove('hidden');
+                    }
+                };
+
+                recognition.onend = () => {
+                    isListening = false;
+                    dom.micButton.classList.remove('listening');
+                    if (dom.micResult.textContent.startsWith('Listening')) {
+                         dom.micResult.textContent = 'Tap to start speaking.';
+                    }
+                };
+
+            } else {
+                // Fallback to text input if API is not supported
+                dom.micButton.classList.add('hidden');
+                dom.textFallback.classList.remove('hidden');
+                dom.micResult.textContent = 'Voice recognition is not supported in this browser. Please use text input.';
+            }
+        }
+
+        function toggleRecognition() {
+            if (!recognition) return;
+            
+            if (isListening) {
+                recognition.stop();
+            } else {
+                // Stop any current speaking before starting recognition
+                if (speechSynthesis.speaking) {
+                    speechSynthesis.cancel();
+                }
+                recognition.start();
+            }
+        }
+
+        // --- TEXT INPUT FALLBACK HANDLER ---
+
+        function handleTextCommand() {
+            const command = dom.chatInput.value.trim();
+            if (command === '') return;
+            
+            appendMessage('user', command);
+            handleUserCommand(command);
+            dom.chatInput.value = '';
+        }
+
+        // --- EVENT LISTENERS ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initial Auth Check
+            const user = loadUser();
+            if (user) {
+                CURRENT_USER = user;
+                showView('assistant-view');
+                initializeAssistant();
+            } else {
+                showView('landing-view');
+            }
+
+            // Auth Forms
+            document.getElementById('register-form').addEventListener('submit', handleRegister);
+            document.getElementById('login-form').addEventListener('submit', handleLogin);
+            document.getElementById('logout-button').addEventListener('click', handleLogout);
+
+            // Landing/Auth View Toggles
+            document.querySelectorAll('[data-action^="show-"]').forEach(el => {
+                el.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const targetView = el.getAttribute('data-action').replace('show-', '');
+                    showView(targetView + '-view');
+                });
+            });
+
+            // Assistant View
+            dom.micButton.addEventListener('click', toggleRecognition);
+            dom.sendButton.addEventListener('click', handleTextCommand);
+            dom.chatInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault(); 
+                    handleTextCommand();
+                }
+            });
+        });
+    </script>
 </body>
 </html>
