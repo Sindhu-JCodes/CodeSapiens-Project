@@ -3,728 +3,728 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NIVA - Voice Assistant</title>
-    
+    <title>NIVA - Your Voice Assistant</title>
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Roboto:wght@700&display=swap" rel="stylesheet">
     <style>
-        /* --- 0. Variables and Global Reset (Combined styles.css) --- */
         :root {
-            --color-primary: #4A90E2; /* Soft Blue */
-            --color-secondary: #E8E8E8; /* Light Gray */
-            --color-text-dark: #333333;
-            --color-text-light: #FFFFFF;
-            --color-background: #F4F7FA;
-            --color-success: #5CB85C; /* Green/Success for Microphone Pulse */
-            --color-error: #D9534F;
+            --navy: #0A1D37;
+            --accent: #4A90E2;
+            --pastel-blue: #A0D8F1;
+            --pastel-pink: #FFD3E0;
+            --bg: #F8FBFF;
+            --card: rgba(255, 255, 255, 0.95);
+            --shadow: 0 8px 25px rgba(10, 29, 55, 0.12);
+            --gradient: linear-gradient(135deg, #0A1D37, #1E3A5F);
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            background-color: var(--color-background);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg);
+            color: var(--navy);
             min-height: 100vh;
             display: flex;
             justify-content: center;
-            align-items: center;
-            padding: 20px;
+            align-items: flex-start; /* Changed to start for scrollable */
+            overflow-y: auto; /* Allow scrolling */
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(74, 144, 226, 0.1) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(255, 211, 224, 0.1) 0%, transparent 20%);
         }
 
-        /* --- 1. Layout & View Management --- */
-        #app-container {
-            background: var(--color-text-light);
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        #app {
             width: 100%;
-            max-width: 500px;
-            min-height: 500px;
+            max-width: 520px;
+            margin: 20px;
+            background: var(--card);
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(10px);
+        }
+
+        /* Landing - Full page scrollable */
+        #landing {
+            padding: 60px 40px;
+            text-align: center;
+            background: var(--gradient);
+            color: white;
+            min-height: 100vh; /* Full viewport */
             display: flex;
             flex-direction: column;
-        }
-
-        .view {
-            padding: 30px;
-            transition: opacity 0.3s ease-in-out;
-        }
-        .hidden {
-            display: none !important;
-            opacity: 0;
-        }
-        .active {
-            display: flex;
-            flex-direction: column;
-            height: 100%;
-        }
-
-        /* --- Landing & Form Card (Flexbox Layout) --- */
-        .card {
-            background: var(--color-secondary);
-            border-radius: 10px;
-            padding: 30px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-        }
-
-        .card-landing {
-            text-align: center;
-            padding: 40px 20px;
-            margin-top: 100px;
-        }
-
-        .logo {
-            color: var(--color-primary);
-            font-size: 2rem;
-            font-weight: 700;
-            margin-bottom: 5px;
-        }
-        .logo-large {
-            font-size: 3rem;
-            margin-bottom: 20px;
-        }
-        .description {
-            color: var(--color-text-dark);
-            margin-bottom: 30px;
-            font-size: 0.95rem;
-            line-height: 1.5;
-        }
-
-        /* --- Form Styling --- */
-        form {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        input[type="text"], input[type="password"] {
-            padding: 12px;
-            border: 1px solid #CCCCCC;
-            border-radius: 6px;
-            font-size: 1rem;
-            transition: border-color 0.2s;
-        }
-        input[type="text"]:focus, input[type="password"]:focus {
-            outline: none;
-            border-color: var(--color-primary);
-            box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.3);
-        }
-
-        .form-toggle {
-            text-align: center;
-            font-size: 0.9rem;
-            color: var(--color-primary);
-            text-decoration: none;
-            margin-top: 5px;
-        }
-
-        /* --- Button Styling --- */
-        .button-group {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-            margin-top: 20px;
-        }
-
-        .btn {
-            padding: 12px 25px;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            border: 2px solid transparent;
-            transition: all 0.2s ease;
-            text-align: center;
-        }
-
-        .btn-primary {
-            background-color: var(--color-primary);
-            color: var(--color-text-light);
-            border-color: var(--color-primary);
-            box-shadow: 0 4px 10px rgba(74, 144, 226, 0.4);
-        }
-        .btn-primary:hover {
-            background-color: #3B7AD1;
-            box-shadow: 0 6px 15px rgba(74, 144, 226, 0.6);
-        }
-
-        .btn-secondary {
-            background-color: transparent;
-            color: var(--color-primary);
-            border-color: var(--color-primary);
-        }
-        .btn-secondary:hover {
-            background-color: var(--color-primary);
-            color: var(--color-text-light);
-        }
-
-        /* --- 2. Header (Authenticated View) --- */
-        #app-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 30px;
-            border-bottom: 1px solid #EEE;
-            background-color: var(--color-text-light);
-        }
-        #app-header .logo {
-            font-size: 1.5rem;
-            margin-bottom: 0;
-        }
-
-        /* --- 3. Assistant View (CSS Grid Layout) --- */
-        .grid-layout {
-            display: grid !important;
-            grid-template-rows: 1fr auto; /* Chat area takes remaining space, input area sized by content */
-            height: 100%;
-            min-height: 450px;
-            padding: 0;
-        }
-
-        #chat-history {
-            overflow-y: auto;
-            padding: 20px 30px;
-            background-color: var(--color-background);
-        }
-        .chat-scroll::-webkit-scrollbar {
-            width: 6px;
-        }
-        .chat-scroll::-webkit-scrollbar-thumb {
-            background-color: var(--color-primary);
-            border-radius: 3px;
-        }
-        .chat-scroll::-webkit-scrollbar-track {
-            background: var(--color-secondary);
-        }
-
-        /* --- Chat Bubble Styles --- */
-        .message {
-            display: flex;
-            margin-bottom: 15px;
-            line-height: 1.4;
-        }
-
-        .user-message {
-            justify-content: flex-end;
-        }
-        .assistant-message {
             justify-content: flex-start;
         }
 
-        .message-bubble {
-            padding: 10px 15px;
-            border-radius: 20px;
+        #landing h1 {
+            font-family: 'Roboto', sans-serif;
+            font-weight: 700;
+            font-size: 5rem;
+            margin-bottom: 24px;
+            background: linear-gradient(90deg, #FFD3E0, #A0D8F1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -2px;
+        }
+
+        #landing .description {
+            font-family: 'Pacifico', cursive;
+            font-size: 1.4rem;
+            line-height: 1.8;
+            margin-bottom: 48px;
+            opacity: 0.95;
             max-width: 80%;
-            font-size: 0.95rem;
+            margin-left: auto;
+            margin-right: auto;
         }
 
-        .user-message .message-bubble {
-            background-color: var(--color-primary);
-            color: var(--color-text-light);
-            border-bottom-right-radius: 4px;
+        /* Features Section - Roadmap style */
+        #features {
+            margin: 40px 0;
+            text-align: left;
         }
 
-        .assistant-message .message-bubble {
-            background-color: var(--color-secondary);
-            color: var(--color-text-dark);
-            border-bottom-left-radius: 4px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        #features h2 {
+            font-size: 1.8rem;
+            margin-bottom: 24px;
+            color: white;
         }
 
-        /* --- Input Area --- */
-        #input-area {
-            padding: 15px 30px;
-            background-color: var(--color-text-light);
-            border-top: 1px solid #EEE;
-            display: flex;
-            flex-direction: column; /* Stack mic button and result */
-            align-items: center;
-            gap: 10px;
+        .feature-list {
+            list-style: none;
+            position: relative;
+            padding-left: 40px;
         }
 
-        .mic-btn {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background-color: var(--color-primary);
-            color: var(--color-text-light);
-            border: none;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            box-shadow: 0 4px 15px rgba(74, 144, 226, 0.5);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .mic-btn:hover {
-            transform: scale(1.05);
-        }
-
-        .mic-btn.listening {
-            /* Use the success/green color for the listening state pulse */
-            background-color: var(--color-success); 
-            box-shadow: 0 0 0 0 rgba(92, 184, 92, 0.7);
-            animation: pulse 1.5s infinite;
-        }
-
-        .mic-result {
-            font-size: 0.9rem;
-            color: var(--color-text-dark);
-            height: 1.5em; /* Reserve space */
-            text-align: center;
-        }
-
-        /* --- Text Fallback Input (Flexbox) --- */
-        .text-input-group {
-            display: flex;
-            width: 100%;
-            gap: 10px;
-        }
-
-        #chat-input {
-            flex-grow: 1;
-            padding: 10px;
-        }
-        #send-button {
-            padding: 10px 15px;
-        }
-
-        /* --- 4. Animations --- */
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(92, 184, 92, 0.7); } /* Green Pulse */
-            70% { box-shadow: 0 0 0 15px rgba(92, 184, 92, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(92, 184, 92, 0); }
-        }
-
-        /* --- 5. Modals and Utilities --- */
-        .modal-backdrop {
-            position: fixed;
+        .feature-list::before {
+            content: '';
+            position: absolute;
+            left: 20px;
             top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.6);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
+            bottom: 0;
+            width: 2px;
+            background: rgba(255, 255, 255, 0.3);
         }
-        .modal {
-            background-color: var(--color-text-light);
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-            width: 90%;
-            max-width: 350px;
+
+        .feature-item {
+            position: relative;
+            margin-bottom: 32px;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.6s forwards;
+        }
+
+        .feature-item::before {
+            content: '';
+            position: absolute;
+            left: -20px;
+            top: 10px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--accent);
+            box-shadow: 0 0 0 4px rgba(74, 144, 226, 0.2);
+        }
+
+        .feature-item h3 {
+            font-size: 1.2rem;
+            margin-bottom: 8px;
+        }
+
+        .feature-item p {
+            font-size: 1rem;
+            opacity: 0.8;
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Stagger animations */
+        .feature-item:nth-child(1) { animation-delay: 0.2s; }
+        .feature-item:nth-child(2) { animation-delay: 0.4s; }
+        .feature-item:nth-child(3) { animation-delay: 0.6s; }
+        .feature-item:nth-child(4) { animation-delay: 0.8s; }
+
+        .btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1.5px solid rgba(255, 255, 255, 0.3);
+            padding: 14px 28px;
+            margin: 8px;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+        }
+
+        .btn:hover {
+            background: white;
+            color: var(--navy);
+            transform: translateY(-2px);
+        }
+
+        /* Forms */
+        .form-container {
+            display: none;
+            padding: 40px;
+            background: white;
+        }
+
+        .form-container h2 {
             text-align: center;
+            margin-bottom: 32px;
+            color: var(--navy);
+            font-size: 1.8rem;
         }
-        .modal h3 {
-            color: var(--color-primary);
-            margin-bottom: 15px;
-        }
-        .modal p {
-            color: var(--color-text-dark);
+
+        .form-group {
             margin-bottom: 20px;
         }
 
-        /* --- Media Queries (Responsiveness) --- */
-        @media (min-width: 600px) {
-            .grid-layout {
-                min-height: 500px;
-            }
-            #app-container {
-                max-width: 600px;
-            }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--navy);
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 14px;
+            border: 1.5px solid #ddd;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: border 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.15);
+        }
+
+        .error {
+            color: #e74c3c;
+            font-size: 0.9rem;
+            margin-top: 6px;
+            min-height: 20px;
+        }
+
+        .switch-link {
+            text-align: center;
+            color: var(--accent);
+            cursor: pointer;
+            font-weight: 500;
+            margin-top: 16px;
+        }
+
+        /* Main Dashboard */
+        #main {
+            display: none;
+            height: 80vh;
+            flex-direction: column;
+        }
+
+        #header {
+            padding: 20px;
+            background: var(--gradient);
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #header h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        #logout-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+
+        #chat-container {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 12px 18px;
+            border-radius: 18px;
+            line-height: 1.5;
+            font-size: 1rem;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .user-message {
+            align-self: flex-end;
+            background: var(--accent);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .niva-message {
+            align-self: flex-start;
+            background: #f0f2f5;
+            color: var(--navy);
+            border-bottom-left-radius: 4px;
+        }
+
+        #input-area {
+            padding: 16px;
+            background: white;
+            border-top: 1px solid #eee;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        #user-input {
+            flex: 1;
+            padding: 14px 18px;
+            border: 1.5px solid #ddd;
+            border-radius: 30px;
+            font-size: 1rem;
+        }
+
+        #user-input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        #mic-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--accent);
+            color: white;
+            border: none;
+            font-size: 1.4rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(74, 144, 226, 0.3);
+        }
+
+        #mic-btn.active {
+            background: #e74c3c;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.95); }
+            70% { transform: scale(1.05); }
+            100% { transform: scale(0.95); }
+        }
+
+        #send-btn {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        #spinner {
+            text-align: center;
+            color: var(--accent);
+            font-style: italic;
+            display: none;
+            padding: 10px;
+        }
+
+        @media (max-width: 480px) {
+            #app { margin: 10px; }
+            #landing h1 { font-size: 3rem; }
+            .message { max-width: 90%; }
         }
     </style>
 </head>
 <body>
-
-    <main id="app-container">
-        
-        <!-- Header for Authenticated View -->
-        <header id="app-header" class="hidden">
-            <h1 class="logo">NIVA</h1>
-            <button id="logout-button" class="btn btn-secondary">Logout</button>
-        </header>
-
-        <!-- Dynamic Content Area -->
-        <section id="dynamic-content">
-
-            <!-- 1. LANDING PAGE -->
-            <div id="landing-view" class="view active">
-                <div class="card card-landing">
-                    <h1 class="logo logo-large">NIVA</h1>
-                    <p class="description">NIVA is your friendly voice assistant. She answers your questions with voice, tells time/date, and shares uplifting affirmations. Sign up or log in to start talking!</p>
-                    <div class="button-group">
-                        <button class="btn btn-primary" data-action="show-register">Create Account</button>
-                        <button class="btn btn-secondary" data-action="show-login">Sign In</button>
-                    </div>
-                </div>
+    <div id="app">
+        <!-- Landing -->
+        <div id="landing">
+            <h1>NIVA</h1>
+            <p class="description">NIVA is your friendly voice assistant. She answers with warmth, tells time & date, and lifts your spirit with affirmations. Sign up or log in to start talking!</p>
+            
+            <!-- Features Roadmap -->
+            <div id="features">
+                <h2>Our Features</h2>
+                <ul class="feature-list">
+                    <li class="feature-item">
+                        <h3>Voice Interaction</h3>
+                        <p>Speak naturally and get spoken responses.</p>
+                    </li>
+                    <li class="feature-item">
+                        <h3>Mood Detection</h3>
+                        <p>Empathetic replies based on how you feel.</p>
+                    </li>
+                    <li class="feature-item">
+                        <h3>Calculations</h3>
+                        <p>Perform simple math operations on the fly.</p>
+                    </li>
+                    <li class="feature-item">
+                        <h3>Affirmations & Jokes</h3>
+                        <p>Get motivated or have a laugh anytime.</p>
+                    </li>
+                </ul>
             </div>
+            
+            <button class="btn" id="create-btn">Create Account</button>
+            <button class="btn" id="signin-btn">Sign In</button>
+        </div>
 
-            <!-- 2a. REGISTRATION FORM -->
-            <div id="register-view" class="view hidden">
-                <div class="card">
-                    <h2>Create Account</h2>
-                    <form id="register-form">
-                        <input type="text" id="reg-username" placeholder="Username (min 3 chars)" required minlength="3" aria-label="Username">
-                        <input type="password" id="reg-password" placeholder="Password (min 8 chars, 1 number, 1 symbol)" required minlength="8" aria-label="Password">
-                        <button type="submit" class="btn btn-primary">Register</button>
-                        <a href="#" class="form-toggle" data-action="show-login">Already have an account? Sign In</a>
-                    </form>
-                </div>
+        <!-- Register -->
+        <div id="register-form" class="form-container">
+            <h2>Create Account</h2>
+            <div class="form-group">
+                <label for="reg-username">Username</label>
+                <input type="text" id="reg-username" placeholder="Choose a username (3+ chars)">
+                <div class="error" id="reg-username-error"></div>
             </div>
-
-            <!-- 2b. LOGIN FORM -->
-            <div id="login-view" class="view hidden">
-                <div class="card">
-                    <h2>Sign In</h2>
-                    <form id="login-form">
-                        <input type="text" id="login-username" placeholder="Username" required aria-label="Username">
-                        <input type="password" id="login-password" placeholder="Password" required aria-label="Password">
-                        <button type="submit" class="btn btn-primary">Sign In</button>
-                        <a href="#" class="form-toggle" data-action="show-register">New user? Create Account</a>
-                    </form>
-                </div>
+            <div class="form-group">
+                <label for="reg-password">Password</label>
+                <input type="password" id="reg-password" placeholder="Min 8 chars, 1 number, 1 special">
+                <div class="error" id="reg-password-error"></div>
             </div>
-
-            <!-- 3. ASSISTANT VIEW (CSS Grid Layout) -->
-            <div id="assistant-view" class="view hidden grid-layout">
-                <div id="chat-history" class="chat-scroll">
-                    <!-- Messages dynamically inserted here -->
-                </div>
-
-                <div id="input-area" class="input-area">
-                    <!-- Microphone Button -->
-                    <button id="mic-button" aria-label="Start Voice Command" class="mic-btn">
-                        <svg viewBox="0 0 24 24" fill="currentColor" width="32" height="32">
-                            <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3.53-2.61 6.44-6 6.93V20h2v2H9v-2h2v-3.07c-3.39-.49-6-3.4-6-6.93h2c0 2.87 2.1 5.25 5 5.65V17h-1v2h4v-2h-1v-5.65c2.9-.4 5-2.78 5-5.65z"/>
-                        </svg>
-                    </button>
-                    
-                    <!-- Text Input Fallback -->
-                    <div id="text-fallback" class="text-input-group hidden">
-                        <input type="text" id="chat-input" placeholder="Type command if mic unavailable" aria-label="Chat Input">
-                        <button id="send-button" class="btn btn-primary">Send</button>
-                    </div>
-
-                    <!-- Voice Transcription/Result Display -->
-                    <p id="mic-result" class="mic-result">Tap to start speaking.</p>
-                </div>
+            <div class="form-group">
+                <label for="reg-confirm">Confirm Password</label>
+                <input type="password" id="reg-confirm">
+                <div class="error" id="reg-confirm-error"></div>
             </div>
+            <button class="btn" id="register-submit" style="width:100%; margin-top:10px;">Register</button>
+            <div class="switch-link" id="switch-to-login">Already have an account? Sign In</div>
+        </div>
 
-        </section>
-        
-        <!-- Global Message/Error Box (Replaces alert()) -->
-        <div id="message-box" class="modal-backdrop hidden">
-            <div class="modal">
-                <h3 id="modal-title"></h3>
-                <p id="modal-content"></p>
-                <button class="btn btn-primary" onclick="document.getElementById('message-box').classList.add('hidden');">Close</button>
+        <!-- Login -->
+        <div id="login-form" class="form-container">
+            <h2>Sign In</h2>
+            <div class="form-group">
+                <label for="login-username">Username</label>
+                <input type="text" id="login-username">
+                <div class="error" id="login-username-error"></div>
+            </div>
+            <div class="form-group">
+                <label for="login-password">Password</label>
+                <input type="password" id="login-password">
+                <div class="error" id="login-password-error"></div>
+            </div>
+            <button class="btn" id="login-submit" style="width:100%; margin-top:10px;">Login</button>
+            <div class="switch-link" id="switch-to-register">No account? Create one</div>
+        </div>
+
+        <!-- Main Chat -->
+        <div id="main">
+            <div id="header">
+                <h2>NIVA</h2>
+                <button id="logout-btn">Logout</button>
+            </div>
+            <div id="chat-container"></div>
+            <div id="spinner">NIVA is thinking...</div>
+            <div id="input-area">
+                <button id="mic-btn" aria-label="Speak to NIVA">🎤</button>
+                <input type="text" id="user-input" placeholder="Type or speak...">
+                <button id="send-btn">Send</button>
             </div>
         </div>
-    </main>
+    </div>
 
     <script>
-        // --- Configuration & State ---
-        const ACTIVE_VIEW_CLASS = 'active';
-        let CURRENT_USER = null;
-
-        const AFFIRMATIONS = [
-            "You are capable of amazing things!",
-            "Every day is a fresh start.",
-            "Your potential is limitless.",
-            "You are doing a great job.",
-            "Believe in yourself.",
-            "Your hard work will pay off.",
-            "Take a deep breath; you've got this.",
-            "Focus on the good.",
-            "Small progress is still progress.",
-            "Be kind to yourself today."
-        ];
-
-        // --- Web Speech API Setup ---
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        const speechSynthesis = window.speechSynthesis;
-        let recognition = null;
-        let isListening = false;
-
-        // --- DOM References ---
-        const dom = {
-            appHeader: document.getElementById('app-header'),
-            chatHistory: document.getElementById('chat-history'),
-            micButton: document.getElementById('mic-button'),
-            micResult: document.getElementById('mic-result'),
-            textFallback: document.getElementById('text-fallback'),
-            chatInput: document.getElementById('chat-input'),
-            sendButton: document.getElementById('send-button'),
-            messageBox: document.getElementById('message-box'),
-            modalTitle: document.getElementById('modal-title'),
-            modalContent: document.getElementById('modal-content')
+        // === DOM ELEMENTS ===
+        const els = {
+            landing: document.getElementById('landing'),
+            register: document.getElementById('register-form'),
+            login: document.getElementById('login-form'),
+            main: document.getElementById('main'),
+            chat: document.getElementById('chat-container'),
+            input: document.getElementById('user-input'),
+            mic: document.getElementById('mic-btn'),
+            send: document.getElementById('send-btn'),
+            spinner: document.getElementById('spinner')
         };
 
-        // --- UTILITY FUNCTIONS ---
+        // === STATE ===
+        const memory = {
+            username: '',
+            userMood: 'neutral',
+            knowsName: false,
+            askedName: false,
+            greetingDone: false
+        };
 
-        function showMessage(title, content) {
-            dom.modalTitle.textContent = title;
-            dom.modalContent.textContent = content;
-            dom.messageBox.classList.remove('hidden');
+        // === SPEECH ===
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const recognition = SpeechRecognition ? new SpeechRecognition() : null;
+        const synth = window.speechSynthesis;
+
+        // === DATA ===
+        const affirmations = [
+            "You're doing better than you think — keep going!",
+            "Every small step counts. You're on the right path.",
+            "Your presence makes the world brighter.",
+            "You're stronger than yesterday.",
+            "Today is full of possibilities for you.",
+            "You deserve peace, love, and happiness."
+        ];
+
+        const jokes = [
+            "Why don't eggs tell jokes? They'd crack each other up!",
+            "I told my computer I needed a break, and now it won't stop sending me KitKat ads.",
+            "Why did the math book look sad? Because it had too many problems."
+        ];
+
+        // === INIT ===
+        if (localStorage.getItem('loggedIn') === 'true') {
+            memory.username = localStorage.getItem('username') || '';
+            showMain();
+        } else {
+            showLanding();
         }
 
-        function showView(viewId) {
-            document.querySelectorAll('.view').forEach(view => {
-                view.classList.remove(ACTIVE_VIEW_CLASS);
-                view.classList.add('hidden');
+        // === EVENT LISTENERS ===
+        document.getElementById('create-btn').onclick = () => showForm('register');
+        document.getElementById('signin-btn').onclick = () => showForm('login');
+        document.getElementById('switch-to-login').onclick = () => showForm('login');
+        document.getElementById('switch-to-register').onclick = () => showForm('register');
+        document.getElementById('register-submit').onclick = register;
+        document.getElementById('login-submit').onclick = login;
+        document.getElementById('logout-btn').onclick = logout;
+        els.send.onclick = sendMessage;
+        els.input.addEventListener('keypress', e => e.key === 'Enter' && sendMessage());
+        els.mic.onclick = startVoice;
+
+        // === FUNCTIONS ===
+        function showLanding() {
+            els.landing.style.display = 'flex';
+            hideAll(['register', 'login', 'main']);
+        }
+
+        function showForm(form) {
+            hideAll(['landing', 'register', 'login', 'main']);
+            els[form].style.display = 'block';
+            clearErrors();
+        }
+
+        function hideAll(ids) {
+            ids.forEach(id => {
+                if (els[id]) els[id].style.display = 'none';
             });
-
-            const view = document.getElementById(viewId);
-            if (view) {
-                view.classList.remove('hidden');
-                view.classList.add(ACTIVE_VIEW_CLASS);
-            }
-            
-            // Manage header visibility
-            if (viewId === 'assistant-view') {
-                dom.appHeader.classList.remove('hidden');
-            } else {
-                dom.appHeader.classList.add('hidden');
-            }
         }
 
-        function scrollToBottom() {
-            dom.chatHistory.scrollTop = dom.chatHistory.scrollHeight;
+        function clearErrors() {
+            document.querySelectorAll('.error').forEach(el => el.textContent = '');
         }
 
-        // --- AUTHENTICATION LOGIC ---
-
-        function loadUser() {
-            const user = localStorage.getItem('niva_user'); 
-            return user ? JSON.parse(user) : null;
+        function showMain() {
+            hideAll(['landing', 'register', 'login']);
+            els.main.style.display = 'flex';
+            if (!memory.greetingDone) greetUser();
         }
 
-        function saveUser(user, pass) {
-            localStorage.setItem('niva_user', JSON.stringify({ username: user, password: pass }));
-        }
-
-        function clearSession() {
-            localStorage.removeItem('niva_user');
-            CURRENT_USER = null;
-            dom.chatHistory.innerHTML = ''; // Clear chat history on logout
-        }
-
-        function validatePassword(pass) {
-            // Min 8 chars, must include 1 number and 1 symbol
-            return pass.length >= 8 && /\d/.test(pass) && /[!@#$%^&*(),.?":{}|<>]/.test(pass);
-        }
-
-        function handleRegister(e) {
-            e.preventDefault();
+        function register() {
             const username = document.getElementById('reg-username').value.trim();
-            const password = document.getElementById('reg-password').value;
+            const pass = document.getElementById('reg-password').value;
+            const confirm = document.getElementById('reg-confirm').value;
 
-            if (username.length < 3) {
-                showMessage('Error', 'Username must be at least 3 characters long.');
-                return;
-            }
-            if (!validatePassword(password)) {
-                showMessage('Error', 'Password must be at least 8 characters long and include a number and a symbol.');
-                return;
-            }
+            clearErrors();
+            let valid = true;
 
-            saveUser(username, password); 
-            showMessage('Success', 'Account created! Please sign in.');
-            showView('login-view');
-            document.getElementById('register-form').reset();
+            if (username.length < 3) { error('reg-username-error', 'Username too short'); valid = false; }
+            if (!/(?=.*\d)(?=.*[!@#$%^&*])[\w!@#$%^&*]{8,}/.test(pass)) {
+                error('reg-password-error', 'Need 8+ chars, 1 number, 1 special');
+                valid = false;
+            }
+            if (pass !== confirm) { error('reg-confirm-error', "Passwords don't match"); valid = false; }
+
+            if (valid) {
+                localStorage.setItem('username', username);
+                localStorage.setItem('password', pass);
+                localStorage.setItem('loggedIn', 'true');
+                memory.username = username;
+                showMain();
+            }
         }
 
-        function handleLogin(e) {
-            e.preventDefault();
-            const user = document.getElementById('login-username').value.trim();
+        function login() {
+            const username = document.getElementById('login-username').value.trim();
             const pass = document.getElementById('login-password').value;
-            const storedUser = loadUser();
+            const storedUser = localStorage.getItem('username');
+            const storedPass = localStorage.getItem('password');
 
-            if (storedUser && storedUser.username === user && storedUser.password === pass) {
-                CURRENT_USER = storedUser;
-                showView('assistant-view');
-                initializeAssistant();
+            if (username === storedUser && pass === storedPass) {
+                localStorage.setItem('loggedIn', 'true');
+                memory.username = username;
+                showMain();
             } else {
-                showMessage('Error', 'Invalid username or password.');
+                error('login-username-error', 'Invalid credentials');
             }
         }
 
-        function handleLogout() {
-            clearSession();
-            showView('landing-view');
+        function logout() {
+            localStorage.setItem('loggedIn', 'false');
+            Object.keys(memory).forEach(k => memory[k] = k === 'userMood' ? 'neutral' : false);
+            memory.greetingDone = false;
+            showLanding();
         }
 
-        // --- CHAT DISPLAY LOGIC ---
-
-        function appendMessage(sender, text) {
-            const messageDiv = document.createElement('div');
-            messageDiv.classList.add('message', `${sender}-message`);
-
-            const bubble = document.createElement('div');
-            bubble.classList.add('message-bubble');
-            bubble.textContent = text;
-            
-            messageDiv.appendChild(bubble);
-            dom.chatHistory.appendChild(messageDiv);
-            scrollToBottom();
+        function error(id, msg) {
+            document.getElementById(id).textContent = msg;
         }
 
-        function initializeAssistant() {
-            appendMessage('assistant', `Hello, ${CURRENT_USER.username}! I am NIVA. How can I assist you today? Try asking for the 'time', 'date', or an 'affirmation'.`);
-            checkSpeechAPI();
+        function sendMessage() {
+            const text = els.input.value.trim();
+            if (!text) return;
+            addMessage('user', text);
+            els.input.value = '';
+            processInput(text);
         }
 
-        // --- SPEECH API & NIVA LOGIC ---
+        function startVoice() {
+            if (!recognition) return alert('Voice not supported. Type instead.');
+            els.mic.classList.add('active');
+            recognition.start();
+
+            recognition.onresult = e => {
+                const transcript = e.results[0][0].transcript;
+                els.input.value = transcript;
+                els.mic.classList.remove('active');
+                sendMessage();
+            };
+
+            recognition.onerror = () => {
+                els.mic.classList.remove('active');
+                alert('Voice error. Try typing.');
+            };
+        }
+
+        function processInput(input) {
+            els.spinner.style.display = 'block';
+            const lower = input.toLowerCase().replace(/[?!.]/g, '');
+
+            let response = '';
+
+            // Natural language math
+            let calcInput = input;
+            if (lower.includes('what is') || lower.includes('calculate')) {
+                calcInput = input.replace(/what is|calculate/i, '').trim();
+            }
+
+            // === MATH CALCULATION ===
+            const mathMatch = calcInput.match(/(\d+\.?\d*)\s*([+\-*/])\s*(\d+\.?\d*)/);
+            if (mathMatch) {
+                const num1 = parseFloat(mathMatch[1]);
+                const op = mathMatch[2];
+                const num2 = parseFloat(mathMatch[3]);
+                let result;
+
+                switch (op) {
+                    case '+': result = num1 + num2; break;
+                    case '-': result = num1 - num2; break;
+                    case '*': result = num1 * num2; break;
+                    case '/': result = num2 !== 0 ? num1 / num2 : "∞ (can't divide by zero)"; break;
+                }
+
+                if (typeof result === 'number') {
+                    result = result % 1 === 0 ? result : result.toFixed(2);
+                }
+                response = `Result: ${num1} ${op} ${num2} = ${result}`;
+            }
+            // === END MATH ===
+
+            else if (!memory.knowsName && /my name is (\w+)/.test(lower)) {
+                const name = lower.match(/my name is (\w+)/)[1];
+                memory.username = name.charAt(0).toUpperCase() + name.slice(1);
+                memory.knowsName = true;
+                response = `Nice to meet you, ${memory.username}! How are you feeling today?`;
+            }
+            else if (!memory.greetingDone) {
+                response = `Hi ${memory.username || 'there'}! I'm NIVA. What's on your mind?`;
+                memory.greetingDone = true;
+            }
+            else if (lower.includes('sad') || lower.includes('down')) {
+                memory.userMood = 'sad';
+                response = "I'm really sorry. Want to talk about it? I'm here.";
+            }
+            else if (lower.includes('happy') || lower.includes('great')) {
+                memory.userMood = 'happy';
+                response = "That makes me happy too! What's the good news?";
+            }
+            else if (lower.includes('time')) {
+                response = `It's ${new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}.`;
+            }
+            else if (lower.includes('date')) {
+                response = `Today is ${new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}.`;
+            }
+            else if (lower.includes('affirmation') || lower.includes('motivate')) {
+                response = affirmations[Math.floor(Math.random() * affirmations.length)];
+            }
+            else if (lower.includes('joke')) {
+                response = jokes[Math.floor(Math.random() * jokes.length)];
+            }
+            else if (memory.userMood === 'sad') {
+                response = "I'm still here. Want a hug? Hug. Or I can share something positive.";
+            }
+            else {
+                response = `You said: "${input}". Tell me more!`;
+                if (!memory.askedName && Math.random() > 0.6) {
+                    response += " By the way, what's your name?";
+                    memory.askedName = true;
+                }
+            }
+
+            setTimeout(() => {
+                addMessage('niva', response);
+                speak(response);
+                els.spinner.style.display = 'none';
+            }, 600);
+        }
+
+        function greetUser() {
+            setTimeout(() => {
+                addMessage('niva', `Welcome, ${memory.username || 'friend'}! I'm NIVA. How can I help?`);
+                speak(`Welcome, ${memory.username || 'friend'}!`);
+            }, 500);
+        }
+
+        function addMessage(sender, text) {
+            const div = document.createElement('div');
+            div.className = `message ${sender}-message`;
+            div.textContent = text;
+            els.chat.appendChild(div);
+            els.chat.scrollTop = els.chat.scrollHeight;
+        }
 
         function speak(text) {
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = 'en-US'; 
-            speechSynthesis.speak(utterance);
+            if (!synth) return;
+            const utter = new SpeechSynthesisUtterance(text);
+            utter.rate = 0.9;
+            utter.pitch = 1.1;
+            synth.speak(utter);
         }
-
-        function handleUserCommand(command) {
-            const cleanCommand = command.toLowerCase().trim();
-            let responseText = '';
-
-            // 1. Core Logic
-            if (cleanCommand.includes("hello") || cleanCommand.includes("hi")) {
-                responseText = "Hello! How can I help you today?";
-            } else if (cleanCommand.includes("time")) {
-                const now = new Date();
-                const time = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
-                responseText = `It's ${time}`;
-            } else if (cleanCommand.includes("date")) {
-                const now = new Date();
-                const date = now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-                responseText = `Today is ${date}`;
-            } else if (cleanCommand.includes("affirmation") || cleanCommand.includes("motivate") || cleanCommand.includes("inspire")) {
-                const randomIndex = Math.floor(Math.random() * AFFIRMATIONS.length);
-                responseText = AFFIRMATIONS[randomIndex];
-            } else {
-                // Fallback Response
-                responseText = `You said: "${command}". That's interesting! Try asking for time, date, or an affirmation!`;
-            }
-
-            // 2. Display and Speak
-            appendMessage('assistant', responseText);
-            speak(responseText);
-        }
-
-        // --- SPEECH RECOGNITION IMPLEMENTATION ---
-
-        function checkSpeechAPI() {
-            if (SpeechRecognition) {
-                dom.textFallback.classList.add('hidden');
-                recognition = new SpeechRecognition();
-                recognition.continuous = false;
-                recognition.lang = 'en-US';
-                recognition.interimResults = false;
-                recognition.maxAlternatives = 1;
-
-                recognition.onstart = () => {
-                    isListening = true;
-                    dom.micButton.classList.add('listening');
-                    dom.micResult.textContent = 'Listening... Speak now.';
-                };
-
-                recognition.onresult = (event) => {
-                    const transcript = event.results[0][0].transcript;
-                    dom.micResult.textContent = transcript;
-                    appendMessage('user', transcript);
-                    handleUserCommand(transcript);
-                };
-
-                recognition.onerror = (event) => {
-                    isListening = false;
-                    dom.micButton.classList.remove('listening');
-                    dom.micResult.textContent = 'Error: ' + event.error + '. Try typing.';
-                    // Show text input fallback if a permanent error occurs
-                    if (event.error !== 'no-speech') {
-                         dom.textFallback.classList.remove('hidden');
-                    }
-                };
-
-                recognition.onend = () => {
-                    isListening = false;
-                    dom.micButton.classList.remove('listening');
-                    if (dom.micResult.textContent.startsWith('Listening')) {
-                         dom.micResult.textContent = 'Tap to start speaking.';
-                    }
-                };
-
-            } else {
-                // Fallback to text input if API is not supported
-                dom.micButton.classList.add('hidden');
-                dom.textFallback.classList.remove('hidden');
-                dom.micResult.textContent = 'Voice recognition is not supported in this browser. Please use text input.';
-            }
-        }
-
-        function toggleRecognition() {
-            if (!recognition) return;
-            
-            if (isListening) {
-                recognition.stop();
-            } else {
-                // Stop any current speaking before starting recognition
-                if (speechSynthesis.speaking) {
-                    speechSynthesis.cancel();
-                }
-                recognition.start();
-            }
-        }
-
-        // --- TEXT INPUT FALLBACK HANDLER ---
-
-        function handleTextCommand() {
-            const command = dom.chatInput.value.trim();
-            if (command === '') return;
-            
-            appendMessage('user', command);
-            handleUserCommand(command);
-            dom.chatInput.value = '';
-        }
-
-        // --- EVENT LISTENERS ---
-        document.addEventListener('DOMContentLoaded', () => {
-            // Initial Auth Check
-            const user = loadUser();
-            if (user) {
-                CURRENT_USER = user;
-                showView('assistant-view');
-                initializeAssistant();
-            } else {
-                showView('landing-view');
-            }
-
-            // Auth Forms
-            document.getElementById('register-form').addEventListener('submit', handleRegister);
-            document.getElementById('login-form').addEventListener('submit', handleLogin);
-            document.getElementById('logout-button').addEventListener('click', handleLogout);
-
-            // Landing/Auth View Toggles
-            document.querySelectorAll('[data-action^="show-"]').forEach(el => {
-                el.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    const targetView = el.getAttribute('data-action').replace('show-', '');
-                    showView(targetView + '-view');
-                });
-            });
-
-            // Assistant View
-            dom.micButton.addEventListener('click', toggleRecognition);
-            dom.sendButton.addEventListener('click', handleTextCommand);
-            dom.chatInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    e.preventDefault(); 
-                    handleTextCommand();
-                }
-            });
-        });
     </script>
 </body>
 </html>
